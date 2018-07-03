@@ -2,6 +2,7 @@ package goconfig
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -47,13 +48,42 @@ func LoadConfigFile(fileName string, moreFiles ...string) (c *ConfigFile, err er
 }
 
 func (c *ConfigFile) loadFile(fileName string) (err error) {
-	f, err := os.Open(fileName)
+	AppPath, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		return err
+	}
+
+	workPath, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	appConfigPath := ""
+	appConfigPath = filepath.Join(workPath, fileName)
+	if !FileExists(appConfigPath) {
+		appConfigPath = filepath.Join(AppPath, fileName)
+		if !FileExists(appConfigPath) {
+			return errors.New("config path not found")
+		}
+	}
+
+	f, err := os.Open(appConfigPath)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
 	return c.read(f)
+}
+
+// FileExists reports whether the named file or directory exists.
+func fileExists(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
 }
 
 // Read reads an io.Reader and returns a configuration representation.
