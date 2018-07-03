@@ -60,9 +60,9 @@ func (c *ConfigFile) loadFile(fileName string) (err error) {
 
 	appConfigPath := ""
 	appConfigPath = filepath.Join(workPath, fileName)
-	if !FileExists(appConfigPath) {
+	if !fileExists(appConfigPath) {
 		appConfigPath = filepath.Join(AppPath, fileName)
-		if !FileExists(appConfigPath) {
+		if !fileExists(appConfigPath) {
 			return errors.New("config path not found")
 		}
 	}
